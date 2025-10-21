@@ -5,7 +5,6 @@ use xitca_web::{
     App, codegen::route, error::Error, handler::json::LazyJson, http::HeaderMap, middleware::Logger,
 };
 
-
 mod CustomError;
 mod Discord;
 mod GitHub;
