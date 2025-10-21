@@ -1,10 +1,10 @@
-use std::sync::OnceLock;
-use twilight_gateway::{Shard, ShardId, Intents, Config};
-use twilight_http::Client as HttpClient;
-use twilight_model::id::{marker::ChannelMarker, Id};
-use twilight_model::channel::message::Embed;
-use std::sync::Arc;
 use futures::StreamExt;
+use std::sync::Arc;
+use std::sync::OnceLock;
+use twilight_gateway::{Config, Intents, Shard, ShardId};
+use twilight_http::Client as HttpClient;
+use twilight_model::channel::message::Embed;
+use twilight_model::id::{Id, marker::ChannelMarker};
 
 // Static storage for Discord channel ID
 static CHANNEL_ID: OnceLock<Id<ChannelMarker>> = OnceLock::new();
@@ -16,15 +16,15 @@ static HTTP_CLIENT: OnceLock<Arc<HttpClient>> = OnceLock::new();
 pub fn init_channel_id() -> Result<(), String> {
     let channel_id_str = std::env::var("DISCORD_CHANNEL_ID")
         .map_err(|_| "DISCORD_CHANNEL_ID environment variable not set")?;
-    
+
     let channel_id: u64 = channel_id_str
         .parse()
         .map_err(|_| "DISCORD_CHANNEL_ID must be a valid number")?;
-    
+
     CHANNEL_ID
         .set(Id::new(channel_id))
         .map_err(|_| "Channel ID already initialized")?;
-    
+
     Ok(())
 }
 
@@ -34,7 +34,7 @@ pub fn init_http_client(token: String) -> Result<(), String> {
     HTTP_CLIENT
         .set(client)
         .map_err(|_| "HTTP client already initialized")?;
-    
+
     Ok(())
 }
 
@@ -58,13 +58,13 @@ pub fn get_http_client() -> Result<Arc<HttpClient>, String> {
 pub async fn send_message(content: String) -> Result<(), String> {
     let channel_id = get_channel_id()?;
     let client = get_http_client()?;
-    
+
     client
         .create_message(channel_id)
         .content(&content)
         .await
         .map_err(|e| format!("Failed to send message: {}", e))?;
-    
+
     Ok(())
 }
 
@@ -72,22 +72,22 @@ pub async fn send_message(content: String) -> Result<(), String> {
 pub async fn send_embed(embed: Embed) -> Result<(), String> {
     let channel_id = get_channel_id()?;
     let client = get_http_client()?;
-    
+
     client
         .create_message(channel_id)
         .embeds(&[embed])
         .await
         .map_err(|e| format!("Failed to send embed: {}", e))?;
-    
+
     Ok(())
 }
 
 /// Start the Discord gateway shard (makes bot online)
 pub async fn start_gateway(token: String) -> Result<(), String> {
     let config = Config::new(token, Intents::empty());
-    
+
     let mut shard = Shard::with_config(ShardId::ONE, config);
-    
+
     // Spawn the gateway processing in a background task
     tokio::spawn(async move {
         loop {
@@ -99,7 +99,7 @@ pub async fn start_gateway(token: String) -> Result<(), String> {
                 }
                 None => break,
             };
-            
+
             // Process events (we don't need to handle any specific events for this bot)
             // The gateway connection itself keeps the bot online
             tokio::spawn(async move {
@@ -108,6 +108,6 @@ pub async fn start_gateway(token: String) -> Result<(), String> {
             });
         }
     });
-    
+
     Ok(())
 }

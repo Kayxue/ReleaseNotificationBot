@@ -1,9 +1,9 @@
 use xitca_web::{
+    WebContext,
     error::Error,
     handler::Responder,
     http::{StatusCode, WebResponse},
     service::Service,
-    WebContext,
 };
 
 use crate::CustomError::{BadRequest, InternalServerError};

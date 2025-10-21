@@ -1,10 +1,10 @@
 use std::{convert::Infallible, error, fmt};
 
 use xitca_web::{
+    WebContext,
     error::Error,
     http::{StatusCode, WebResponse},
     service::Service,
-    WebContext,
 };
 
 #[derive(Debug)]
